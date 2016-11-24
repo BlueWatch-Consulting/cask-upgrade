@@ -33,29 +33,10 @@ def main():
             continue
 
         if latest_version > latest_installed_version:
-            print('{} is outdated:'.format(application))
-            print('- Installed version: {}'.format(latest_installed_version))
-            print('- Latest version: {}'.format(latest_version))
-
-            if auto_updates:
-                print('Note: {} may have auto updated to the latest version'.format(application))
-
-            if confirmed('Upgrade? '):
-                print()
-                upgrade(application)
-                latest_installed_version, old_installed_versions = get_installed_versions(application)
-
-            print()
-
+            upgrade(application)
+            latest_installed_version, old_installed_versions = get_installed_versions(application)
         if old_installed_versions:
-            print('{} has old versions installed:'.format(application))
-            for version in old_installed_versions:
-                print('- {}'.format(version))
-
-            if confirmed('Remove? '):
-                remove_old_versions(application, old_installed_versions)
-
-            print()
+            remove_old_versions(application, old_installed_versions)
 
 
 def check_folders_exist():
@@ -112,23 +93,6 @@ def get_latest_version_and_auto_update(application):
         return latest_version, bool(auto_updates)
 
     return False, False
-
-
-def confirmed(message):
-    try:
-        # Python 2
-        ask = raw_input
-    except NameError:
-        # Python 3
-        ask = input
-
-    while True:
-        response = ask(message).strip().lower()
-
-        if response in {'y', 'yes'}:
-            return True
-        elif response in {'n', 'no'}:
-            return False
 
 
 def upgrade(application):
