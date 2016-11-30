@@ -33,6 +33,7 @@ def main():
             continue
 
         if latest_version > latest_installed_version:
+            print('{} is outdated:'.format(application))
             upgrade(application)
             latest_installed_version, old_installed_versions = get_installed_versions(application)
         if old_installed_versions:
