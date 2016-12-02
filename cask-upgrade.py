@@ -27,13 +27,15 @@ def main():
         if not latest_installed_version:
             continue
 
-        latest_version, auto_updates = get_latest_version_and_auto_update(application)
+        latest_version = get_latest_version(application)
 
         if not latest_version:
             continue
 
         if latest_version > latest_installed_version:
             print('{} is outdated:'.format(application))
+            print('- Installed version: {}'.format(latest_installed_version))
+            print('- Latest version: {}'.format(latest_version))
             upgrade(application)
             latest_installed_version, old_installed_versions = get_installed_versions(application)
         if old_installed_versions:
@@ -65,7 +67,7 @@ def get_installed_versions(application):
     return False, False
 
 
-def get_latest_version_and_auto_update(application):
+def get_latest_version(application):
     for directory in METADATA_PATHS:
         metadata_path = os.path.join(directory, '{}.rb'.format(application))
         if not os.path.isfile(metadata_path):
@@ -89,11 +91,9 @@ def get_latest_version_and_auto_update(application):
             if not latest_version or version > latest_version:
                 latest_version = version
 
-        auto_updates = re.search(r'^\W*auto_updates true\W', metadata, re.MULTILINE)
+        return latest_version
 
-        return latest_version, bool(auto_updates)
-
-    return False, False
+    return False
 
 
 def upgrade(application):
