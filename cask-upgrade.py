@@ -9,15 +9,19 @@ from distutils.version import LooseVersion
 from shutil import rmtree
 
 
-INSTALLED_PATH = '/usr/local/Caskroom'
+# Gets the location of Homebrew
+BREW_LOCATION = subprocess.check_output(['which', 'brew'])[:-9]
+INSTALLED_PATH = BREW_LOCATION + 'Caskroom'
 METADATA_PATHS = [
-    '/usr/local/Homebrew/Library/Taps/caskroom/homebrew-cask/Casks',
-    '/usr/local/Homebrew/Library/Taps/caskroom/homebrew-versions/Casks',
+    BREW_LOCATION + 'Homebrew/Library/Taps/caskroom/homebrew-cask/Casks',
+    BREW_LOCATION + 'Homebrew/Library/Taps/caskroom/homebrew-versions/Casks',
 ]
 
 
+# Main method
 def main():
     check_folders_exist()
+    updates_required = False
     for application in os.listdir(INSTALLED_PATH):
         if not os.path.isdir(os.path.join(INSTALLED_PATH, application)):
             continue
@@ -25,6 +29,7 @@ def main():
         latest_installed_version, old_installed_versions = get_installed_versions(application)
 
         if not latest_installed_version:
+            updates_required = True
             continue
 
         latest_version = get_latest_version(application)
@@ -41,7 +46,11 @@ def main():
         if old_installed_versions:
             remove_old_versions(application, old_installed_versions)
 
+    if not updates_required:
+        print("All casks are currently up to date")
 
+
+# Checks if Homebrew Cask is installed
 def check_folders_exist():
     if not os.path.isdir(INSTALLED_PATH):
         print('Error: {} does not exist, are you sure Homebrew-Cask is installed?'.format(INSTALLED_PATH))
@@ -56,6 +65,7 @@ def check_folders_exist():
             METADATA_PATHS.remove(path)
 
 
+# Gets the currently installed versions of the application
 def get_installed_versions(application):
     versions = os.listdir(os.path.join(INSTALLED_PATH, application))
     versions = [LooseVersion(version) for version in versions if version != '.metadata']
@@ -66,7 +76,7 @@ def get_installed_versions(application):
 
     return False, False
 
-
+# Gets the latest version of the application
 def get_latest_version(application):
     for directory in METADATA_PATHS:
         metadata_path = os.path.join(directory, '{}.rb'.format(application))
@@ -96,15 +106,17 @@ def get_latest_version(application):
     return False
 
 
+# Upgrades the application
 def upgrade(application):
-    # --force is needed after homebrew-cask started moving apps to /Applications
     subprocess.call(['brew', 'cask', 'install', '--force', application])
 
 
+# Removes the older versions of the application
 def remove_old_versions(application, versions):
     for version in versions:
         rmtree(os.path.join(INSTALLED_PATH, application, version.vstring))
 
 
+# Calls main method
 if __name__ == '__main__':
     main()
