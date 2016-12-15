@@ -41,13 +41,14 @@ def main():
             print('{} is outdated:'.format(application))
             print('- Installed version: {}'.format(latest_installed_version))
             print('- Latest version: {}'.format(latest_version))
-            upgrade(application)
+            subprocess.call(['brew', 'cask', 'install', '--force', application])
             latest_installed_version, old_installed_versions = get_installed_versions(application)
         if old_installed_versions:
-            remove_old_versions(application, old_installed_versions)
+            for version in versions:
+                rmtree(os.path.join(INSTALLED_PATH, application, version.vstring))
 
     if not updates_required:
-        print("All casks are currently up to date")
+        print('All casks are currently up to date.')
 
 
 # Checks if Homebrew Cask is installed
@@ -75,6 +76,7 @@ def get_installed_versions(application):
         return versions[0], versions[1:]
 
     return False, False
+
 
 # Gets the latest version of the application
 def get_latest_version(application):
@@ -104,17 +106,6 @@ def get_latest_version(application):
         return latest_version
 
     return False
-
-
-# Upgrades the application
-def upgrade(application):
-    subprocess.call(['brew', 'cask', 'install', '--force', application])
-
-
-# Removes the older versions of the application
-def remove_old_versions(application, versions):
-    for version in versions:
-        rmtree(os.path.join(INSTALLED_PATH, application, version.vstring))
 
 
 # Calls main method
